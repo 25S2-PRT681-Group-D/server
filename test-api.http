@@ -1,0 +1,66 @@
+### Test AgroScan API Endpoints
+
+### 1. Register a new user
+POST https://localhost:7000/api/auth/register
+Content-Type: application/json
+
+{
+  "firstName": "Test",
+  "lastName": "User",
+  "role": "farmer",
+  "email": "test@example.com",
+  "password": "password123"
+}
+
+### 2. Login
+POST https://localhost:7000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "jane.doe@example.com",
+  "password": "password123"
+}
+
+### 3. Get current user (replace TOKEN with actual token from login response)
+GET https://localhost:7000/api/users/me
+Authorization: Bearer YOUR_TOKEN_HERE
+
+### 4. Get all inspections
+GET https://localhost:7000/api/inspections
+
+### 5. Get my inspections (replace TOKEN with actual token)
+GET https://localhost:7000/api/users/me
+Authorization: Bearer YOUR_TOKEN_HERE
+
+### 6. Create a new inspection (replace TOKEN with actual token)
+POST https://localhost:7000/api/inspections
+Authorization: Bearer YOUR_TOKEN_HERE
+Content-Type: application/json
+
+{
+  "plantName": "Test Plant",
+  "inspectionDate": "2025-01-16T10:00:00Z",
+  "country": "Australia",
+  "state": "NSW",
+  "city": "Sydney",
+  "notes": "Test inspection notes"
+}
+
+### 7. Get inspection analysis for inspection ID 1
+GET https://localhost:7000/api/inspectionanalysis/inspection/1
+
+### 8. Upload an image (replace TOKEN with actual token)
+POST https://localhost:7000/api/images/upload
+Authorization: Bearer YOUR_TOKEN_HERE
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="inspectionId"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="imageFile"; filename="test.jpg"
+Content-Type: image/jpeg
+
+< ./test-image.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
