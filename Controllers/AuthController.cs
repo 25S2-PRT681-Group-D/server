@@ -4,9 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AgroScan.API.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
-    public class AuthController : ControllerBase
+    public class AuthController : BaseController
     {
         private readonly IUserService _userService;
 
@@ -20,6 +19,9 @@ namespace AgroScan.API.Controllers
         {
             try
             {
+                var validationResult = ValidateModelState();
+                if (validationResult != null) return validationResult;
+
                 var user = await _userService.CreateUserAsync(createUserDto);
                 var loginDto = new LoginDto
                 {
@@ -29,22 +31,32 @@ namespace AgroScan.API.Controllers
                 var authResponse = await _userService.LoginAsync(loginDto);
                 return Ok(authResponse);
             }
-            catch (InvalidOperationException ex)
+            catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return HandleServiceException(ex);
             }
         }
 
         [HttpPost("login")]
         public async Task<ActionResult<AuthResponseDto>> Login(LoginDto loginDto)
         {
-            var authResponse = await _userService.LoginAsync(loginDto);
-            if (authResponse == null)
+            try
             {
-                return Unauthorized("Invalid email or password");
-            }
+                var validationResult = ValidateModelState();
+                if (validationResult != null) return validationResult;
 
-            return Ok(authResponse);
+                var authResponse = await _userService.LoginAsync(loginDto);
+                if (authResponse == null)
+                {
+                    return Unauthorized(new { message = "Invalid email or password" });
+                }
+
+                return Ok(authResponse);
+            }
+            catch (Exception ex)
+            {
+                return HandleServiceException(ex);
+            }
         }
     }
 }

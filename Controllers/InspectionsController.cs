@@ -6,10 +6,9 @@ using System.Security.Claims;
 
 namespace AgroScan.API.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
     [Authorize]
-    public class InspectionsController : ControllerBase
+    public class InspectionsController : BaseController
     {
         private readonly IInspectionService _inspectionService;
 
@@ -25,76 +24,109 @@ namespace AgroScan.API.Controllers
             [FromQuery] DateTime? startDate,
             [FromQuery] DateTime? endDate)
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (userIdClaim == null || !int.TryParse(userIdClaim, out int userId))
+            try
             {
-                return Unauthorized();
+                var userId = GetCurrentUserId();
+                var inspections = await _inspectionService.SearchInspectionsAsync(userId, plantName, status, startDate, endDate);
+                return Ok(inspections);
             }
-
-            var inspections = await _inspectionService.SearchInspectionsAsync(userId, plantName, status, startDate, endDate);
-            return Ok(inspections);
+            catch (Exception ex)
+            {
+                return HandleServiceException(ex);
+            }
         }
 
         [HttpGet("my-inspections")]
         public async Task<ActionResult<IEnumerable<InspectionDto>>> GetMyInspections()
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (userIdClaim == null || !int.TryParse(userIdClaim, out int userId))
+            try
             {
-                return Unauthorized();
+                var userId = GetCurrentUserId();
+                var inspections = await _inspectionService.GetInspectionsByUserIdAsync(userId);
+                return Ok(inspections);
             }
-
-            var inspections = await _inspectionService.GetInspectionsByUserIdAsync(userId);
-            return Ok(inspections);
+            catch (Exception ex)
+            {
+                return HandleServiceException(ex);
+            }
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<InspectionDto>> GetInspection(int id)
         {
-            var inspection = await _inspectionService.GetInspectionByIdAsync(id);
-            if (inspection == null)
+            try
             {
-                return NotFound();
-            }
+                if (id <= 0)
+                {
+                    return BadRequest(new { message = "Invalid inspection ID" });
+                }
 
-            return Ok(inspection);
+                var inspection = await _inspectionService.GetInspectionByIdAsync(id);
+                return HandleServiceResult(inspection, "Inspection not found");
+            }
+            catch (Exception ex)
+            {
+                return HandleServiceException(ex);
+            }
         }
 
         [HttpPost]
         public async Task<ActionResult<InspectionDto>> CreateInspection(CreateInspectionDto createInspectionDto)
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (userIdClaim == null || !int.TryParse(userIdClaim, out int userId))
+            try
             {
-                return Unauthorized();
-            }
+                var validationResult = ValidateModelState();
+                if (validationResult != null) return validationResult;
 
-            var inspection = await _inspectionService.CreateInspectionAsync(createInspectionDto, userId);
-            return CreatedAtAction(nameof(GetInspection), new { id = inspection.Id }, inspection);
+                var userId = GetCurrentUserId();
+                var inspection = await _inspectionService.CreateInspectionAsync(createInspectionDto, userId);
+                return CreatedAtAction(nameof(GetInspection), new { id = inspection.Id }, inspection);
+            }
+            catch (Exception ex)
+            {
+                return HandleServiceException(ex);
+            }
         }
 
         [HttpPut("{id}")]
         public async Task<ActionResult<InspectionDto>> UpdateInspection(int id, UpdateInspectionDto updateInspectionDto)
         {
-            var inspection = await _inspectionService.UpdateInspectionAsync(id, updateInspectionDto);
-            if (inspection == null)
+            try
             {
-                return NotFound();
-            }
+                if (id <= 0)
+                {
+                    return BadRequest(new { message = "Invalid inspection ID" });
+                }
 
-            return Ok(inspection);
+                var validationResult = ValidateModelState();
+                if (validationResult != null) return validationResult;
+
+                var inspection = await _inspectionService.UpdateInspectionAsync(id, updateInspectionDto);
+                return HandleServiceResult(inspection, "Inspection not found");
+            }
+            catch (Exception ex)
+            {
+                return HandleServiceException(ex);
+            }
         }
 
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteInspection(int id)
         {
-            var result = await _inspectionService.DeleteInspectionAsync(id);
-            if (!result)
+            try
             {
-                return NotFound();
-            }
+                if (id <= 0)
+                {
+                    return BadRequest(new { message = "Invalid inspection ID" });
+                }
 
-            return NoContent();
+                var result = await _inspectionService.DeleteInspectionAsync(id);
+                return HandleServiceResult(result, "Inspection not found");
+            }
+            catch (Exception ex)
+            {
+                return HandleServiceException(ex);
+            }
         }
     }
 }
