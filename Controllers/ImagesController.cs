@@ -33,6 +33,23 @@ namespace AgroScan.API.Controllers
             }
         }
 
+        [HttpPost("upload-multiple")]
+        public async Task<ActionResult<IEnumerable<InspectionImageDto>>> UploadMultipleImages(CreateMultipleInspectionImagesDto createImagesDto)
+        {
+            try
+            {
+                var validationResult = ValidateModelState();
+                if (validationResult != null) return validationResult;
+
+                var images = await _imageService.UploadMultipleImagesAsync(createImagesDto);
+                return Ok(images);
+            }
+            catch (Exception ex)
+            {
+                return HandleServiceException(ex);
+            }
+        }
+
         [HttpGet("{id}")]
         public async Task<ActionResult<InspectionImageDto>> GetImage(int id)
         {

@@ -78,6 +78,100 @@ namespace AgroScan.API.Services
             };
         }
 
+        public async Task<IEnumerable<InspectionImageDto>> UploadMultipleImagesAsync(CreateMultipleInspectionImagesDto createImagesDto)
+        {
+            // Validate files
+            if (createImagesDto.ImageFiles == null || !createImagesDto.ImageFiles.Any())
+            {
+                throw new ArgumentException("No files uploaded.");
+            }
+
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+            var uploadedImages = new List<InspectionImageDto>();
+            var errors = new List<string>();
+
+            // Validate each file
+            foreach (var imageFile in createImagesDto.ImageFiles)
+            {
+                if (imageFile == null || imageFile.Length == 0)
+                {
+                    errors.Add($"File '{imageFile?.FileName ?? "Unknown"}' is empty.");
+                    continue;
+                }
+
+                var fileExtension = Path.GetExtension(imageFile.FileName).ToLowerInvariant();
+                if (!allowedExtensions.Contains(fileExtension))
+                {
+                    errors.Add($"File '{imageFile.FileName}' has invalid type. Only JPG, PNG, and WEBP files are allowed.");
+                    continue;
+                }
+
+                if (imageFile.Length > 10 * 1024 * 1024)
+                {
+                    errors.Add($"File '{imageFile.FileName}' is too large. Maximum size is 10MB.");
+                    continue;
+                }
+            }
+
+            // If there are validation errors, throw an exception
+            if (errors.Any())
+            {
+                throw new ArgumentException($"Validation errors: {string.Join("; ", errors)}");
+            }
+
+            // Process each valid file
+            foreach (var imageFile in createImagesDto.ImageFiles)
+            {
+                try
+                {
+                    // Generate unique filename
+                    var fileExtension = Path.GetExtension(imageFile.FileName).ToLowerInvariant();
+                    var fileName = $"{Guid.NewGuid()}{fileExtension}";
+                    var filePath = Path.Combine(_imagePath, fileName);
+
+                    // Save file
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await imageFile.CopyToAsync(stream);
+                    }
+
+                    // Save to database
+                    var inspectionImage = new InspectionImage
+                    {
+                        InspectionId = createImagesDto.InspectionId,
+                        Image = fileName,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
+                    };
+
+                    _context.InspectionImages.Add(inspectionImage);
+                    await _context.SaveChangesAsync();
+
+                    uploadedImages.Add(new InspectionImageDto
+                    {
+                        Id = inspectionImage.Id,
+                        InspectionId = inspectionImage.InspectionId,
+                        Image = inspectionImage.Image,
+                        CreatedAt = inspectionImage.CreatedAt,
+                        UpdatedAt = inspectionImage.UpdatedAt
+                    });
+                }
+                catch (Exception ex)
+                {
+                    // Log the error but continue with other files
+                    errors.Add($"Failed to upload '{imageFile.FileName}': {ex.Message}");
+                }
+            }
+
+            // If some files failed to upload, throw an exception with details
+            if (errors.Any())
+            {
+                throw new InvalidOperationException($"Some files failed to upload: {string.Join("; ", errors)}");
+            }
+
+            return uploadedImages;
+        }
+
         public async Task<bool> DeleteImageAsync(int imageId)
         {
             var image = await _context.InspectionImages.FindAsync(imageId);

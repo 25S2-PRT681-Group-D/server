@@ -19,4 +19,14 @@ namespace AgroScan.API.DTOs
         [Required]
         public IFormFile ImageFile { get; set; } = null!;
     }
+
+    public class CreateMultipleInspectionImagesDto
+    {
+        [Required]
+        public int InspectionId { get; set; }
+
+        [Required]
+        [MinLength(1, ErrorMessage = "At least one image is required")]
+        public List<IFormFile> ImageFiles { get; set; } = new List<IFormFile>();
+    }
 }

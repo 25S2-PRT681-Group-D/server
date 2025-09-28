@@ -101,7 +101,11 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseHttpsRedirection();
+// Configure HTTPS redirection (only in production or when HTTPS is available)
+if (!app.Environment.IsDevelopment() || app.Configuration.GetValue<int>("HttpsRedirection:HttpsPort") > 0)
+{
+    app.UseHttpsRedirection();
+}
 app.UseCors("AllowAll");
 
 // Add global exception handling middleware
