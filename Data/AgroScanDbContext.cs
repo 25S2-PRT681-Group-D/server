@@ -13,6 +13,7 @@ namespace AgroScan.API.Data
         public DbSet<Inspection> Inspections { get; set; }
         public DbSet<InspectionImage> InspectionImages { get; set; }
         public DbSet<InspectionAnalysis> InspectionAnalyses { get; set; }
+        public DbSet<BackgroundTask> BackgroundTasks { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

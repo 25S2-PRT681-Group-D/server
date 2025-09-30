@@ -1,0 +1,35 @@
+# Ignore build artifacts
+bin/
+obj/
+out/
+
+# Ignore logs
+logs/
+*.log
+
+# Ignore IDE files
+.vs/
+.vscode/
+*.user
+*.suo
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
+
+# Ignore Git
+.git/
+.gitignore
+
+# Ignore documentation
+README.md
+*.md
+
+# Ignore test files
+**/Test*/
+**/*Test*/
+**/*Tests*/
+
+# Ignore temporary files
+*.tmp
+*.temp

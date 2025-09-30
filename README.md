@@ -1,182 +1,355 @@
 # AgroScan API
 
-A .NET Web API backend for the AgroScan plant inspection and analysis application.
+A comprehensive plant health analysis API built with .NET 9, featuring AI-powered plant inspection, background processing, and enterprise-grade features.
 
-## Features
+## 🚀 Features
 
-- **User Management**: Registration, authentication, and user profile management
-- **Plant Inspections**: Create, read, update, and delete plant inspections
-- **Image Upload**: Upload and manage plant images with local storage
-- **AI Analysis**: Store and manage AI-powered plant disease analysis results
-- **JWT Authentication**: Secure API endpoints with JWT tokens
-- **Swagger UI**: Interactive API documentation
+### Core Features
+- **Plant Health Analysis**: Upload images for AI-powered plant health diagnosis
+- **User Management**: JWT-based authentication and authorization
+- **Inspection Management**: Track and manage plant inspections
+- **Image Processing**: Handle and store plant images
 
-## Database Schema
+### Enterprise Features
+- **File I/O Operations**: CSV/Excel import/export for data management
+- **Background Processing**: Queue-based task processing with Hangfire
+- **Structured Logging**: Comprehensive logging with Serilog
+- **Database Migrations**: FluentMigrator for schema management
+- **Active Directory Integration**: LDAP authentication support
+- **Email Services**: Automated email notifications
+- **Web API Utilities**: HTTP client services for external integrations
 
-### Users Table
-- `id` (Primary Key)
-- `first_name`
-- `last_name`
-- `role` (farmer, admin, researcher, student)
-- `email`
-- `password` (hashed)
-- `created_at`
-- `updated_at`
+## 🛠️ Technology Stack
 
-### Inspections Table
-- `id` (Primary Key)
-- `plant_name`
-- `inspection_date`
-- `country`
-- `state`
-- `city`
-- `notes`
-- `created_at`
-- `updated_at`
-- `user_id` (Foreign Key)
+- **.NET 9**: Latest .NET framework
+- **Entity Framework Core**: ORM for database operations
+- **SQL Server**: Primary database
+- **JWT Authentication**: Secure API access
+- **Hangfire**: Background job processing
+- **FluentMigrator**: Database migrations
+- **Serilog**: Structured logging
+- **Swagger/OpenAPI**: API documentation
+- **Elmah.Io**: Error logging and monitoring
 
-### Inspection Images Table
-- `id` (Primary Key)
-- `inspection_id` (Foreign Key)
-- `image` (filename)
-- `created_at`
-- `updated_at`
+## 📋 Prerequisites
 
-### Inspection Analysis Table
-- `inspection_id` (Primary Key, Foreign Key)
-- `status`
-- `confidence_score`
-- `description`
-- `treatment_recommendation`
-- `created_at`
-- `updated_at`
-
-## Getting Started
-
-### Prerequisites
-
-- .NET 9.0 SDK
-- SQL Server (LocalDB or full instance)
+- .NET 9 SDK
+- SQL Server 2019 or later
 - Visual Studio 2022 or VS Code
+- Git
 
-### Installation
+## 🚀 Getting Started
 
-1. Clone the repository
-2. Navigate to the project directory
-3. Update the connection string in `appsettings.json` if needed
-4. Run the application:
-
+### 1. Clone the Repository
 ```bash
-dotnet run
+git clone https://github.com/your-org/agroscan-api.git
+cd agroscan-api
 ```
 
-The API will be available at `https://localhost:7000` (or the configured port).
+### 2. Database Setup
 
-### Swagger UI
+#### Option A: SQL Server (Recommended)
+1. Install SQL Server 2019 or later
+2. Create a database named `AgroScanDB`
+3. Update connection string in `appsettings.json`
 
-Once the application is running, navigate to the root URL to access the Swagger UI for interactive API documentation.
+#### Option B: SQLite (Development)
+1. No additional setup required
+2. Database file will be created automatically
 
-## API Endpoints
+### 3. Configuration
 
-### Authentication
-- `POST /api/auth/register` - Register a new user
-- `POST /api/auth/login` - Login and get JWT token
-
-### Users
-- `GET /api/users` - Get all users (Admin only)
-- `GET /api/users/{id}` - Get user by ID
-- `GET /api/users/me` - Get current user profile
-- `PUT /api/users/{id}` - Update user
-- `DELETE /api/users/{id}` - Delete user
-
-### Inspections
-- `GET /api/inspections` - Get all inspections with optional filtering
-- `GET /api/inspections/my-inspections` - Get current user's inspections
-- `GET /api/inspections/{id}` - Get inspection by ID
-- `POST /api/inspections` - Create new inspection
-- `PUT /api/inspections/{id}` - Update inspection
-- `DELETE /api/inspections/{id}` - Delete inspection
-
-### Images
-- `POST /api/images/upload` - Upload plant image
-- `GET /api/images/{id}` - Get image metadata
-- `GET /api/images/inspection/{inspectionId}` - Get images for inspection
-- `GET /api/images/file/{imageName}` - Download image file
-- `DELETE /api/images/{id}` - Delete image
-
-### Analysis
-- `GET /api/inspectionanalysis/inspection/{inspectionId}` - Get analysis for inspection
-- `POST /api/inspectionanalysis` - Create analysis
-- `PUT /api/inspectionanalysis/inspection/{inspectionId}` - Update analysis
-- `DELETE /api/inspectionanalysis/inspection/{inspectionId}` - Delete analysis
-
-## Configuration
-
-### JWT Settings
-Update the JWT configuration in `appsettings.json`:
-
-```json
-{
-  "Jwt": {
-    "Key": "YourSuperSecretKeyThatIsAtLeast32CharactersLong!",
-    "Issuer": "AgroScanAPI",
-    "Audience": "AgroScanUsers"
-  }
-}
-```
-
-### Database Connection
-Update the connection string in `appsettings.json`:
-
+#### Update appsettings.json
 ```json
 {
   "ConnectionStrings": {
     "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=AgroScanDB;Trusted_Connection=true;MultipleActiveResultSets=true"
+  },
+  "Jwt": {
+    "Key": "YourSecretKeyHere",
+    "Issuer": "AgroScanAPI",
+    "Audience": "AgroScanUsers"
+  },
+  "Email": {
+    "SmtpHost": "smtp.gmail.com",
+    "SmtpPort": "587",
+    "EnableSsl": "true",
+    "Username": "your-email@gmail.com",
+    "Password": "your-app-password",
+    "FromAddress": "noreply@agroscan.com"
+  },
+  "ActiveDirectory": {
+    "Domain": "your-domain.com",
+    "Container": "CN=Users,DC=your-domain,DC=com"
+  },
+  "ElmahIo": {
+    "ApiKey": "your-elmah-api-key",
+    "LogId": "your-log-id"
   }
 }
 ```
 
-## Sample Data
+### 4. Install Dependencies
+```bash
+dotnet restore
+```
 
-The application includes seed data with:
-- Sample users (farmer, admin, researcher)
-- Sample plant inspections
-- Sample AI analysis results
+### 5. Run Database Migrations
+```bash
+# Using Entity Framework migrations
+dotnet ef database update
 
-## Security
+# Using FluentMigrator (alternative)
+dotnet run --migrate
+```
 
-- Passwords are hashed using BCrypt
-- JWT tokens for authentication
-- CORS enabled for frontend integration
-- Input validation and sanitization
+### 6. Run the Application
+```bash
+dotnet run
+```
 
-## File Storage
+The API will be available at:
+- **API**: `https://localhost:7001`
+- **Swagger UI**: `https://localhost:7001/swagger`
+- **Hangfire Dashboard**: `https://localhost:7001/hangfire`
 
-Images are stored locally in the `wwwroot/images/inspections/` directory. The filename is stored in the database for reference.
+## 📁 Project Structure
 
-## Development
+```
+AgroScan.API/
+├── Controllers/           # API Controllers
+├── Data/                 # Database context and models
+├── DTOs/                 # Data Transfer Objects
+├── Services/             # Business logic services
+├── Utilities/            # Utility classes
+├── Middleware/           # Custom middleware
+├── Migrations/           # Database migrations
+├── Models/               # Entity models
+├── Exceptions/           # Custom exceptions
+└── Filters/              # Action filters
+```
 
-### Adding New Features
+## 🔧 Development Setup
 
-1. Create models in the `Models` folder
-2. Create DTOs in the `DTOs` folder
-3. Create services in the `Services` folder
-4. Create controllers in the `Controllers` folder
-5. Update the DbContext if needed
-6. Register services in `Program.cs`
+### Environment Configuration
+
+#### Development
+```bash
+# Set environment
+export ASPNETCORE_ENVIRONMENT=Development
+
+# Run with hot reload
+dotnet watch run
+```
+
+#### Production
+```bash
+# Set environment
+export ASPNETCORE_ENVIRONMENT=Production
+
+# Build and run
+dotnet build --configuration Release
+dotnet run --configuration Release
+```
 
 ### Database Migrations
 
-To create a new migration:
+#### Entity Framework Migrations
 ```bash
+# Add new migration
 dotnet ef migrations add MigrationName
-```
 
-To update the database:
-```bash
+# Update database
 dotnet ef database update
+
+# Remove last migration
+dotnet ef migrations remove
 ```
 
-## License
+#### FluentMigrator Migrations
+```bash
+# Run migrations
+dotnet run --migrate
 
-This project is licensed under the MIT License.
+# Rollback migration
+dotnet run --rollback --version 20250101000001
+```
+
+## 🧪 Testing
+
+### Unit Tests
+```bash
+dotnet test
+```
+
+### API Testing
+Use the provided `test-api.http` file or import the OpenAPI specification into your preferred API testing tool.
+
+### Load Testing
+```bash
+# Install NBomber
+dotnet tool install -g NBomber
+
+# Run load tests
+nbomber run --scenario load-test
+```
+
+## 📊 Monitoring and Logging
+
+### Structured Logging
+- **Console**: Development logging
+- **File**: Daily log files in `logs/` directory
+- **Seq**: Centralized logging (optional)
+
+### Error Monitoring
+- **Elmah.Io**: Error tracking and monitoring
+- **Hangfire Dashboard**: Background job monitoring
+
+### Health Checks
+```bash
+# Health check endpoint
+curl https://localhost:7001/health
+```
+
+## 🚀 Deployment
+
+### Docker Deployment
+```bash
+# Build Docker image
+docker build -t agroscan-api .
+
+# Run container
+docker run -p 7001:7001 agroscan-api
+```
+
+### IIS Deployment
+1. Publish the application
+2. Configure IIS with .NET Core hosting bundle
+3. Set up application pool
+4. Configure web.config
+
+### Azure Deployment
+```bash
+# Deploy to Azure App Service
+az webapp deployment source config-zip --resource-group myResourceGroup --name myAppName --src ./publish.zip
+```
+
+## 🔐 Security
+
+### Authentication
+- JWT Bearer tokens
+- Active Directory integration
+- Role-based authorization
+
+### Security Headers
+- HTTPS enforcement
+- CORS configuration
+- Request validation
+
+### Data Protection
+- Password hashing with BCrypt
+- SQL injection prevention
+- XSS protection
+
+## 📈 Performance
+
+### Caching
+- In-memory caching for frequently accessed data
+- Response caching for static content
+
+### Background Processing
+- Hangfire for long-running tasks
+- Queue-based processing
+- Retry mechanisms
+
+### Database Optimization
+- Indexed queries
+- Connection pooling
+- Query optimization
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests
+5. Submit a pull request
+
+### Code Style
+- Follow C# coding conventions
+- Use meaningful variable names
+- Add XML documentation
+- Write unit tests
+
+## 📝 API Documentation
+
+### Authentication
+All endpoints require JWT authentication except:
+- `POST /api/auth/login`
+- `POST /api/auth/register`
+- `GET /api/health`
+
+### Rate Limiting
+- 100 requests per minute per user
+- 1000 requests per hour per IP
+
+### Error Handling
+All errors return consistent problem detail responses:
+```json
+{
+  "type": "https://tools.ietf.org/html/rfc7231#section-6.6.1",
+  "title": "An error occurred",
+  "status": 400,
+  "detail": "Error description",
+  "instance": "/api/endpoint",
+  "traceId": "trace-id",
+  "timestamp": "2025-01-01T00:00:00Z"
+}
+```
+
+## 🆘 Troubleshooting
+
+### Common Issues
+
+#### Database Connection
+```bash
+# Check connection string
+# Verify SQL Server is running
+# Check firewall settings
+```
+
+#### Authentication Issues
+```bash
+# Verify JWT configuration
+# Check token expiration
+# Validate user credentials
+```
+
+#### Background Jobs
+```bash
+# Check Hangfire dashboard
+# Verify database connection
+# Check job queue status
+```
+
+### Logs Location
+- **Application Logs**: `logs/agroscan-{date}.txt`
+- **Error Logs**: Elmah.Io dashboard
+- **Background Jobs**: Hangfire dashboard
+
+## 📞 Support
+
+- **Documentation**: [API Docs](https://localhost:7001/swagger)
+- **Issues**: [GitHub Issues](https://github.com/your-org/agroscan-api/issues)
+- **Email**: support@agroscan.com
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- .NET team for the excellent framework
+- Entity Framework team for the ORM
+- Hangfire team for background processing
+- Serilog team for structured logging
